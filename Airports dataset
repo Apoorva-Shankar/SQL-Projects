@@ -1,0 +1,150 @@
+-- Excluding all flights that were cancelled or diverted and calculating average departure and arrival delays for all flights (in minutes)
+
+SELECT
+	AVG(DEPDELAY)
+    ,AVG(ARRDELAY)
+FROM
+	ontime
+WHERE
+	CANCELLED = 0
+AND
+	DIVERTED = 0
+;
+
+SELECT DISTINCT DEPTIME, CRSDEPTIME, DEPDELAY, DepTime - CRSDepTime from ontime ORDER BY DEPTIME DESC, CRSDEPTIME DESC LIMIT 100;
+
+-- Q8
+SELECT	AVG(DepTime - CRSDepTime)
+FROM		ontime
+WHERE	Cancelled = 0 AND 
+Diverted = 0;
+
+-- Correcting departure and crs departure times
+show columns from ontime  ;
+SELECT
+	DEPTIME
+    ,CRSDEPTIME
+    ,TIME(DEPTIME * 100)
+    ,TIME(CRSDEPTIME*100)
+FROM
+	ontime
+LIMIT 10;
+
+SELECT DATA_TYPE from INFORMATION_SCHEMA.COLUMNS where
+table_schema = 'airline_ontime' and tablename = 'ontime' ;
+
+-- Checking id depdelay is consistent
+SELECT
+
+    AVG(DEPDELAY)
+    ,AVG(TIME_TO_SEC(TIMEDIFF(TIME(DEPTIME),TIME(CRSDEPTIME))))
+    
+FROM
+	ontime
+WHERE
+	CANCELLED = 0
+AND 
+	DIVERTED = 0
+AND
+	CRSDEPTIME BETWEEN 800 AND 1600 
+AND
+	ABS(DEPDELAY) <= 240 
+;
+
+-- total distance traveled of all non-cancelled, non-diverted flights that departed from RDU on July 20, 2007
+
+SELECT
+	SUM(DISTANCE)
+FROM
+	ontime
+WHERE
+	CANCELLED = 0
+AND
+	DIVERTED = 0
+AND
+	ORIGIN = 'RDU'
+AND
+	CONCAT(DAYOFMONTH,'+',MONTH,'+',YEAR) = '20+7+2007';
+    
+-- the total number of direct flights between SFO airport in San Francisco and LAX airport in Los Angeles.  
+
+SELECT 
+	COUNT(*)
+FROM
+	ontime
+WHERE
+	CANCELLED = 0
+AND
+	DIVERTED = 0
+AND
+	((ORIGIN = 'SFO' AND DEST = 'LAX' AND CRSDEPTIME > 1700 AND CRSDEPTIME < 2000 AND DAYOFWEEK = 5)
+	OR
+	(ORIGIN = 'LAX' AND DEST = 'SFO' AND CRSDEPTIME > 1700 AND CRSDEPTIME < 2000 AND DAYOFWEEK = 7))
+
+;
+
+/* 
+“score” for each unique carrier (assuming “unique carrier” is synonymous with “airline”).    
+sum of 2 percentages:
+First, the unique carrier’s percentage of all direct flights between the two airports (satisfying all of the same conditions as in your first query). 
+Second, the unique carrier’s percentage of its own flights that do NOT have an arrival delay of at least 60 minutes.  
+*/
+SELECT 
+	UniqueCarrier
+    ,ROUND((UNIQUE_CARRIER_PERC+PERC_OF_OWN_FLIGHTS) * 100,2) AS SCORE
+FROM
+(
+SELECT
+	UNIQUECARRIER
+	,COUNT(*)/ ( SELECT 
+					COUNT(*)
+				FROM
+					ontime
+				WHERE
+					CANCELLED = 0
+				AND
+					DIVERTED = 0
+				AND
+					((ORIGIN = 'SFO' AND DEST = 'LAX' AND CRSDEPTIME > 1700 AND CRSDEPTIME < 2000 AND DAYOFWEEK = 5)
+					OR
+					(ORIGIN = 'LAX' AND DEST = 'SFO' AND CRSDEPTIME > 1700 AND CRSDEPTIME < 2000 AND DAYOFWEEK = 7))
+				) AS UNIQUE_CARRIER_PERC
+			,SUM(
+					CASE
+						WHEN ARRDELAY < 60
+                        THEN 1
+					END
+				)/COUNT(*) AS PERC_OF_OWN_FLIGHTS
+                        
+FROM
+	ontime
+	
+WHERE
+	CANCELLED = 0
+AND
+	DIVERTED = 0
+AND
+	((ORIGIN = 'SFO' AND DEST = 'LAX' AND CRSDEPTIME > 1700 AND CRSDEPTIME < 2000 AND DAYOFWEEK = 5)
+	OR
+	(ORIGIN = 'LAX' AND DEST = 'SFO' AND CRSDEPTIME > 1700 AND CRSDEPTIME < 2000 AND DAYOFWEEK = 7))
+
+GROUP BY UNIQUECARRIER
+) A
+
+ORDER BY SCORE DESC;
+
+--the ten calendar weeks of 2007 with the greatest number of cancelled flight records? 
+
+
+SELECT
+	WEEK(DATE(CONCAT(YEAR,'-',MONTH,'-',DAYOFMONTH)),2) AS WEEK_NUMBER
+    ,MIN(DATE(CONCAT(YEAR,'-',MONTH,'-',DAYOFMONTH))) AS START_OF_WEEK
+    ,MAX(DATE(CONCAT(YEAR,'-',MONTH,'-',DAYOFMONTH))) AS END_OF_WEEK
+    ,COUNT(*) AS CANCELLED_FLIGHT_COUNT
+FROM 
+	ontime
+ WHERE
+	CANCELLED = 1
+GROUP BY WEEK_NUMBER
+ORDER BY COUNT(*) DESC
+LIMIT 10;
