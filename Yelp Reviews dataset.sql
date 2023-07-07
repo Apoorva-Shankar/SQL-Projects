@@ -120,3 +120,47 @@ WHERE
 	CHAR_LENGTH(TRIM(NAME)) - POSITION('~~' IN REPLACE(TRIM(NAME), ' ', '~~' ))>POSITION('~~' IN REPLACE(TRIM(NAME), ' ', '~~' )) - 1 ;
 
 
+/*
+Using the “yelp” database, let’s examine some data on recent reviews.  
+Focus on all reviews in the database on or after October 1, 2019.  
+What percentage of restaurants that are open (is_open = 1) have at least one review since October 1, 2019? 
+*/
+
+WITH RECENTLY_REVIEWD AS
+(
+SELECT 
+	BUSINESS_ID
+    ,COUNT(*) 
+FROM review 
+GROUP BY BUSINESS_ID
+HAVING MAX(DATE) >= DATE('2019-10-01')
+)
+
+SELECT 
+	CASE
+		WHEN RECENTLY_REVIEWD.business_id IS NOT NULL
+        THEN 'Recently Reviewed Restaurant'
+        ELSE 'Not Recently Reviewed'
+	END AS REVIEW_GROUP
+    ,COUNT(DISTINCT business.BUSINESS_ID)
+    ,(COUNT(distinct business.business_id)/
+    (SELECT COUNT(distinct business.business_id) 
+    FROM review 
+    LEFT JOIN
+    business
+    ON
+	business.business_id = review.business_id
+    WHERE IS_OPEN = 1)) * 100 AS PERCENTAGE
+FROM
+	business
+INNER JOIN
+	review
+ON 
+	business.business_id = review.business_id
+LEFT JOIN
+	RECENTLY_REVIEWD
+ON
+	business.business_id = RECENTLY_REVIEWD.business_id
+WHERE
+	IS_OPEN = 1
+GROUP BY REVIEW_GROUP;
