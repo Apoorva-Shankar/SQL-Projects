@@ -146,3 +146,32 @@ FROM health
 GROUP BY 1
 ORDER BY RISK_GROUP DESC;
 
+-- categorizing all patients with “Alive” status into the five blood pressure categories defined here:  
+-- https://www.heart.org/en/health-topics/high-blood-pressure/understanding-blood-pressure-readings.  
+
+SELECT
+	CASE 
+		WHEN SBP < 120 AND DBP < 80
+        THEN 'Normal'
+        WHEN SBP BETWEEN 120 AND 129 AND DBP < 80
+        THEN 'Elevated'
+        WHEN SBP > 180 OR DBP > 120
+        THEN 'Hypertensive Crisis'
+        WHEN SBP >= 140 OR DBP >= 90
+        THEN 'Hypertension Stage 2'
+        WHEN SBP >= 130 OR DBP BETWEEN 80 AND 89
+        THEN 'Hypertension Stage 1'
+        ELSE NULL
+	END AS BP_Group
+    ,COUNT(ID) AS Total_Patients
+    ,ROUND(AVG(BMI),2) AS Avg_BMI
+FROM
+	sanford.health
+WHERE
+	STATUS = 'Alive'
+ AND SBP >= 0
+ AND DBP >= 0 
+GROUP BY
+	BP_GROUP
+ORDER BY
+	AVG_BMI DESC;
