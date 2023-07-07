@@ -589,3 +589,34 @@ ORDER BY
     ,RANKING;
 
 SELECT * FROM airports limit 10;
+
+
+WITH t1 AS
+(
+SELECT *, COUNT(*) AS num, AVG(DepDelay) as AVG
+FROM ontime
+WHERE Cancelled = 0 AND DIVERTED = 0 
+GROUP BY Month, Origin
+), t2 AS
+(
+SELECT *, MIN(num) OVER(PARTITION BY Origin) as Min_Count
+FROM t1
+), t3 AS
+(
+SELECT *, RANK() OVER (PARTITION BY Year, Month ORDER BY AVG DESC) AS RNK
+FROM t2
+WHERE Min_Count >= 1000
+), t4 AS(
+SELECT t3.Month, airports.Name, t3.RNK
+FROM t3 AS t3
+INNER JOIN airports 
+ON    t3.Origin = airports.IATA
+WHERE RNK <= 2
+ORDER BY Month, RNK
+), t5 AS
+(
+SELECT *, ROW_NUMBER() OVER() AS new_RNK
+FROM t4
+)
+SELECT *
+FROM t5;
