@@ -1,7 +1,5 @@
 /*
-Using the pir database, generate a result set that contains the biggest winner (i.e. most total winnings) on each day of the show. 
-Your result set should contain three columns: the date of the show, the biggest winner’s name on that date, and the biggest winner’s total winnings on that date (call this column “tot_winnings”). 
-Order your output by the date of the show in ascending order.
+generating a result set that contains the biggest winner (i.e. most total winnings) on each day of the show. 
 */
 
 SELECT * FROM pir.five_ep LIMIT 10
@@ -42,11 +40,9 @@ ON A.DATE = B.DATE
 AND  A.TOT_WINNINGS = B.WINNINGS
 ORDER BY DATE;
 
-/* Q2
-Again using the pir database, focus on the “Big Wheel.” 
-In particular, determine the highest first spin amount where the contestant decided to take a second spin and their total for both spins was still less than or equal to $1.00. 
-Your result set should be a single value. (Feel free to ignore the one instance where a contestant took a third “bonus” spin. 
-Put differently, focus only on a contestant’s first two spins.)
+/*
+focusing on the “Big Wheel.” 
+In particular, determining the highest first spin amount where the contestant decided to take a second spin and their total for both spins was still less than or equal to $1.00.
 */
 
 SELECT  MAX(MAX_FIRST_SPIN)
@@ -83,17 +79,13 @@ WHERE
     AND NAME IN ('Philip','Eleanor');
     
     
-/* Q3
-Again using the pir database, focus on “Bidders Row.” 
+/* 
+focusing on “Bidders Row.” 
 Depending on the previous three contestants’ bids, it can sometimes be a good strategy for the fourth (i.e. last) bidder to bid exactly 
 $1 more than the maximum bid up to that point. 
 (In doing this, as long as the fourth bidder’s bid is less than the prize value, they will automatically win.) 
 So, first identify all of the instances on “Bidders Row” where the last bidder bids exactly $1 more than maximum of the first three bids. 
 What percentage of the time does the 4th bidder win when using this strategy? 
-Your result set should have two rows and three columns. 
-The first column (call this column “outcome_group”) should have two categories: “bidder4_wins” and “bidder4_loses”. 
-The other two columns should contain the appropriate counts (call this column “n_times”) 
-and percentages (call this column “percent_total”) for each category.
 */
 
 SELECT
@@ -153,28 +145,6 @@ WHERE EVENTTYPE = 'Bidders Row'
 
 group by 1,2,3,4;
 
-
-
-SELECT
-	COUNTRY
-    ,CITY
-    ,COUNT(*) AS TOTAL_REC
-FROM
-	ontime A
-INNER JOIN
-	airports B
-ON A.ORIGIN = B.IATA
-WHERE
-	UPPER(B.COUNTRY) NOT LIKE 'UNITED STATES' 
-AND
-	A.CANCELLED = 0
-AND
-	A.DIVERTED = 0
-GROUP BY
-	COUNTRY
-    ,CITY
-ORDER BY 
-TOTAL_REC DESC;
 
 SELECT * FROM review LIMIT 10;
 SELECT
