@@ -1,10 +1,10 @@
-SELECT DISTINCT WCWIN, DIVWIN, LGWIN,WSWIN FROM Teams 
-WHERE YEARID BETWEEN 1980 AND 2019 ;
+-- SELECT DISTINCT WCWIN, DIVWIN, LGWIN,WSWIN FROM Teams 
+-- WHERE YEARID BETWEEN 1980 AND 2019 ;
 
 WITH TEAM AS
 (
 SELECT 
-	YEARID
+    YEARID
     ,TEAMID
     ,BPF AS X
     ,W/G AS Y
@@ -127,11 +127,11 @@ ON 1=1
 #2
 SELECT * FROM Batting limit 100;
 select * from BattingPost limit 100
-So, before you do anything else, you should sum a player’s stats for BB, IBB, HBP, H, 2B, 3B, HR, AB, and SF  before you do anything else and use these summed values for an individual player year, in a specific year in the equation below.)  Once you have summed each player’s stats for an entire year, you should then filter out all player-years where the player does not meet the AB threshold for that year.
+-- So, before you do anything else, you should sum a player’s stats for BB, IBB, HBP, H, 2B, 3B, HR, AB, and SF  before you do anything else and use these summed values for an individual player year, in a specific year in the equation below.)  Once you have summed each player’s stats for an entire year, you should then filter out all player-years where the player does not meet the AB threshold for that year.
 
-For each player that qualifies (based on the AB threshold) in a given year, calculate their “wOBA” (“wOBA” is short for “weighted on-base average” and is intended to measure a batter’s overall offensive value) for that year.  The equation for wOBA is given as follows:
+-- For each player that qualifies (based on the AB threshold) in a given year, calculate their “wOBA” (“wOBA” is short for “weighted on-base average” and is intended to measure a batter’s overall offensive value) for that year.  The equation for wOBA is given as follows:
 
-wOBA=  ((0.692×(BB-IBB))+(0.723×HBP)+(0.889×(H-2B-3B-HR))+(1.264×2B)+(1.604×3B)+(2.076×HR))/(AB+BB-IBB+SF+HBP);
+-- wOBA=  ((0.692×(BB-IBB))+(0.723×HBP)+(0.889×(H-2B-3B-HR))+(1.264×2B)+(1.604×3B)+(2.076×HR))/(AB+BB-IBB+SF+HBP);
 
 SELECT 
 	PLAYERID
